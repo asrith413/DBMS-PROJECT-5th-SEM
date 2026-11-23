@@ -1,0 +1,38 @@
+name: cims-demo
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: cims
+      POSTGRES_USER: cims
+      POSTGRES_PASSWORD: cims_password
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - cims_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cims -d cims"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:8.0
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - cims_mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  cims_postgres_data:
+  cims_mongodb_data:

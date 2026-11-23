@@ -1,0 +1,33 @@
+title,description,incident_type,severity
+Informational spam received,One employee received generic spam with no links or attachments,Phishing,Low
+Blocked scan from single host,Firewall blocked a brief scan and no internal service was reached,Network Intrusion,Low
+Policy login alert,User logged in from a new device and confirmed the activity,Unauthorized Access,Low
+Test malware file blocked,Antivirus blocked a harmless test signature before execution,Malware,Low
+Malformed query rejected,Application rejected one malformed database query with no impact,SQL Injection,Low
+Old account login attempt,A disabled account received one failed authentication attempt,Unauthorized Access,Low
+Suspicious email reported,Employee reported an unsolicited email without opening its attachment,Phishing,Low
+Reconnaissance blocked,External scanner touched public ports and was automatically blocked,Network Intrusion,Low
+Repeated phishing messages,Several users received credential phishing but nobody submitted credentials,Phishing,Medium
+Adware on workstation,Unwanted browser extension changed settings on one employee laptop,Malware,Medium
+Internal port scan,Managed workstation scanned several internal subnets without authorization,Network Intrusion,Medium
+Multiple login failures,Dozens of failed logins targeted one user account,Unauthorized Access,Medium
+SQL error probing,Web logs contain repeated quote characters and database error probes,SQL Injection,Medium
+Malicious attachment quarantined,Mail gateway quarantined a macro document sent to one department,Phishing,Medium
+Firewall exploit probes,Internet host repeatedly probed a patched firewall interface,Network Intrusion,Medium
+Suspicious service account query,Service account queried records outside its normal schedule,Unauthorized Access,Medium
+Credentials entered into fake site,Employee submitted a password to a phishing page before reporting it,Phishing,High
+Trojan executed on endpoint,Endpoint ran a trojan and attempted command and control traffic,Malware,High
+Successful foreign login,Valid credentials created an unrecognized session from a foreign address,Unauthorized Access,High
+Web SQL injection confirmed,Attacker used UNION queries and accessed a limited customer table,SQL Injection,High
+Lateral movement detected,Compromised workstation authenticated to multiple internal servers,Network Intrusion,High
+Ransomware behavior blocked,Endpoint began encrypting local files before isolation,Malware,High
+Privileged password exposed,Administrator credentials were entered into an imitation portal,Phishing,High
+Database export attempted,Compromised account attempted a large customer data export,Unauthorized Access,High
+Active ransomware outbreak,Multiple servers are encrypting files and business services are unavailable,Malware,Critical
+Customer database exfiltration,Attacker extracted customer identity and payment records,SQL Injection,Critical
+Domain administrator compromise,Threat actor obtained domain administrator access and persists internally,Unauthorized Access,Critical
+Production network takeover,Attackers control core network devices and disrupted connectivity,Network Intrusion,Critical
+Mass credential theft,Phishing campaign captured executive and administrator credentials,Phishing,Critical
+Destructive malware on servers,Wiper malware is deleting data across production servers,Malware,Critical
+Public data breach confirmed,Sensitive regulated records were published by an unauthorized actor,Unauthorized Access,Critical
+Critical application compromise,Injection flaw provides unrestricted production database access,SQL Injection,Critical

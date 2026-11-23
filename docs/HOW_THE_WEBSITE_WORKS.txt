@@ -1,0 +1,372 @@
+================================================================================
+CYBERSECURITY INCIDENT MANAGEMENT SYSTEM (CIMS) - COMPLETE WEBSITE GUIDE
+================================================================================
+Document: docs/HOW_THE_WEBSITE_WORKS.txt
+Application: CIMS Modern React Web Console
+Frontend Tech: React 18, Vite 6, TailwindCSS, Lucide Icons, Recharts
+Backend Tech: FastAPI (Python 3.14 REST API), PostgreSQL 16, MongoDB 8.0
+Active Local URL: http://localhost:5173 (or http://127.0.0.1:5173)
+Backend API URL:  http://127.0.0.1:8000
+================================================================================
+
+TABLE OF CONTENTS
+--------------------------------------------------------------------------------
+1. System Overview & Architecture
+2. How to Access the Website (URLs & Test Accounts)
+3. Light Mode and Dark Mode Toggle
+4. Step-by-Step Walkthrough of Every Page
+   4.1. Login & Session Authentication
+   4.2. SOC Overview Dashboard (/dashboard)
+   4.3. Incident Management & Reporting (/incidents)
+   4.4. Incident Workspace & Response (/incidents/:id)
+   4.5. Security Telemetry Logs (/security-logs)
+   4.6. Asset Inventory Management (/assets)
+   4.7. Threat Actors Catalog (/threat-actors)
+   4.8. Cryptographic Audit Chain (/audit)
+   4.9. Reports & SLA Metrics (/reports)
+5. Role-Based Permissions (Admin vs. Analyst vs. Reporter)
+6. How the System Works Under the Hood
+   6.1. Polyglot Persistence (PostgreSQL + MongoDB)
+   6.2. Dual-Layer Validation (Pydantic + PostgreSQL DDL)
+   6.3. Incident Lifecycle State Machine
+   6.4. Machine Learning Severity Advisory
+   6.5. Cryptographic SHA-256 Hash Chain
+7. Troubleshooting & FAQ
+
+
+================================================================================
+1. SYSTEM OVERVIEW & ARCHITECTURE
+================================================================================
+The CIMS website is an enterprise-grade Security Operations Center (SOC) incident
+management console designed for a 5th-Semester DBMS Academic Project.
+
+It is built as a Single Page Application (SPA) in React 18 using Vite 6.
+It connects to a FastAPI backend that orchestrates two complementary databases:
+
+1. PostgreSQL 16 (Port 5432):
+   The authoritative relational database storing 12 normalized (3NF) tables:
+   users, analysts, incident_types, severity, incidents, assets, incident_assets,
+   incident_assignment, actions, threat_actors, incident_threat_actors, and audit_logs.
+
+2. MongoDB 8.0 (Port 27017):
+   The high-velocity document database storing unstructured security event
+   telemetry (firewall logs, CrowdStrike EDR alerts, packet metadata) in the
+   "cims_logs.security_logs" collection.
+
+
+================================================================================
+2. HOW TO ACCESS THE WEBSITE (URLS & TEST ACCOUNTS)
+================================================================================
+Open your web browser and navigate to:
+   http://localhost:5173
+
+All pre-seeded test accounts use the common password:
+   Password: CimsDemo123!
+
+Pre-seeded User Accounts:
+--------------------------------------------------------------------------------
+Role      | Email Address              | Capabilities
+--------------------------------------------------------------------------------
+ADMIN     | admin@cims.edu             | Complete access to all 9 modules, case
+          |                            | assignment, threat actors, audit verification,
+          |                            | user provisioning, and SOC reports.
+----------+----------------------------+----------------------------------------
+ANALYST   | maya.analyst@cims.edu      | Investigates assigned incidents, adds
+          | noah.analyst@cims.edu      | timeline actions, links impacted assets,
+          |                            | tags threat actors, and attaches logs.
+----------+----------------------------+----------------------------------------
+REPORTER  | reporter@cims.edu          | Reports new security incidents, tests ML
+          | vikram.reporter@cims.edu   | severity advisory, views self-reported
+          |                            | cases (sensitive SOC details are redacted).
+--------------------------------------------------------------------------------
+
+
+================================================================================
+3. LIGHT MODE AND DARK MODE TOGGLE
+================================================================================
+The website features a theme toggle that allows you to switch between
+Dark Cyber Mode and High-Contrast Light Mode:
+
+- Where to find the toggle:
+  1. On the Login Page: Located in the top-right header corner.
+  2. Inside the Application: Located in the top sticky navigation header next to
+     the API Status Badge.
+
+- How it works:
+  * Clicking the button toggles between a Sun icon (Light Mode) and Moon icon (Dark Mode).
+  * Your preference is automatically saved in browser localStorage ("cims_theme")
+    and persists across page refreshes and logins.
+  * In Light Mode, the color scheme uses high-contrast, WCAG AA/AAA-compliant colors:
+    - Critical: Bold Crimson (#991b1b text on #fee2e2 background)
+    - High: Strong Burnt Amber (#c2410c text on #ffedd5 background)
+    - Medium: Rich Honey Amber (#92400e text on #fef3c7 background)
+    - Open / Low: Deep Royal Blue (#1e40af text on #dbeafe background)
+    - Under Investigation: Vivid Cyan (#0369a1 text on #e0f2fe background)
+    - StatCards have solid 4px accent borders and dark slate (#0f172a) metric numbers.
+    - All charts automatically switch between glowing cyber tones and crisp print tones.
+
+
+================================================================================
+4. STEP-BY-STEP WALKTHROUGH OF EVERY PAGE
+================================================================================
+
+4.1. LOGIN & SESSION AUTHENTICATION
+------------------------------------
+- Location: http://localhost:5173/login
+- How it works:
+  1. Enter a valid email (e.g., admin@cims.edu) and password (CimsDemo123!).
+  2. Click "Sign In".
+  3. The frontend sends credentials via POST /api/auth/login.
+  4. FastAPI hashes the password using Argon2id and compares it to users.password_hash.
+  5. Upon success, FastAPI issues an encrypted JWT Bearer Token (HS256).
+  6. The React frontend stores the token in browser sessionStorage (scoped strictly
+     to the current browser tab for security).
+  7. The user is redirected to the /dashboard.
+  8. If an invalid password or email is entered, a clear error banner appears.
+
+4.2. SOC OVERVIEW DASHBOARD (/dashboard)
+----------------------------------------
+- Location: http://localhost:5173/dashboard
+- What you see:
+  1. Live StatCards:
+     - Total Incidents (count from PostgreSQL incidents table)
+     - Open Cases (unassigned/active cases)
+     - Resolved Cases (successfully closed investigations)
+     - Critical Incidents (cases requiring 1-hour SLA response)
+     - Active SLA Breaches (cases exceeding deadline)
+     - Active Analyst Count (security team capacity)
+  2. Interactive Visual Charts (powered by Recharts):
+     - Incidents by Severity Bar Chart (Critical, High, Medium, Low)
+     - Incident Status Breakdown Pie Chart (Open, Assigned, In Progress, Resolved)
+  3. Recent Incidents Table:
+     - Displays the latest registered cases with clickable links to jump directly
+       into the incident workspace.
+
+4.3. INCIDENT MANAGEMENT & REPORTING (/incidents)
+-------------------------------------------------
+- Location: http://localhost:5173/incidents
+- Features:
+  1. Search & Filtering:
+     - Search bar to search titles and descriptions in real time.
+     - Filter by Status: All, Open, Assigned, Under Investigation, In Progress, Resolved, Closed.
+     - Filter by Severity: All, Low, Medium, High, Critical.
+  2. Incident Table:
+     - Shows Incident ID, Title, Classification Type, Severity badge, Current Status,
+       Reported Date, and dynamic SLA deadline status.
+  3. "Report Incident" Modal:
+     - Click the "+ Report Incident" button.
+     - Fill in Title (e.g. "Suspicious PowerShell lateral movement on WS-042").
+     - Fill in Description (details of what was observed).
+     - Select Incident Type (Phishing, Malware, Unauthorized Access, etc.).
+     - AI/ML Severity Advisor:
+       * Click the "Generate suggestion" button.
+       * The backend runs a local scikit-learn machine learning model (TF-IDF +
+         Logistic Regression) on your text.
+       * It displays the AI-suggested severity with a confidence percentage.
+       * You can accept the AI suggestion or select your own severity tier.
+     - Click "Submit Incident":
+       * PostgreSQL creates the incident record with status "Open".
+       * Automatically computes Response and Resolution SLA deadlines.
+       * Creates an atomic SHA-256 audit log entry in PostgreSQL.
+
+4.4. INCIDENT WORKSPACE & RESPONSE (/incidents/:id)
+---------------------------------------------------
+- Location: Click any incident from the list (e.g., /incidents/1)
+- Header Section:
+  - Incident Title and ID.
+  - Status badge (e.g. Under Investigation, Assigned).
+  - Severity badge (e.g. Critical, High).
+  - Dynamic SLA Countdown Box: Shows remaining hours or "SLA Breached" badge in red.
+  - Status Transition Dropdown: Allows advancing the state machine to the next valid state.
+- Four Dedicated Workspace Tabs:
+  Tab 1: Overview
+    - Complete incident description.
+    - Incident Type definition and SLA policy limits.
+    - Reporter name, email, and department.
+  Tab 2: Response & Actions
+    - Analyst Assignment Box (Admins only):
+      * Select an Analyst (e.g. Maya Singh) and an assignment role (e.g. Primary Analyst).
+      * Clicking "Assign" updates the database, increments the analyst's workload count,
+        and automatically advances the case status from "Open" to "Assigned".
+    - Investigation Timeline:
+      * Displays chronological log of all analyst actions.
+      * Analysts can type action notes (e.g. "Isolated endpoint from network") and click
+        "Add Action" to append to the permanent timeline.
+  Tab 3: Impacted Assets & Threat Actors
+    - Affected Assets Table (Many-to-Many junction):
+      * Shows linked servers, databases, or firewalls with their specific "Impact Type".
+      * Click "Link Asset" to select an asset from the organizational catalog and specify
+        its impact (e.g. "Compromised Database", "Target of DoS").
+    - Linked Threat Actors Table:
+      * Shows suspected adversaries or APT groups (e.g. Night Sparrow).
+      * Click "Link Threat Actor" to attribute the incident to an intelligence profile.
+  Tab 4: Security Telemetry Logs
+    - Displays high-velocity event logs associated with this specific case.
+    - Click "Attach Log" to insert telemetry directly into MongoDB (specifying source IP,
+      destination IP, event source, and JSON metadata).
+
+4.5. SECURITY TELEMETRY LOGS (/security-logs)
+---------------------------------------------
+- Location: http://localhost:5173/security-logs
+- What it does:
+  - Provides a direct window into the MongoDB "cims_logs.security_logs" collection.
+  - Filter logs by Event Type (e.g. malware_detection, brute_force), Source, and Severity.
+  - Expand any row to inspect the full raw BSON/JSON telemetry payload including process
+    names, file hashes, and network socket details.
+  - Click "+ Add Security Log" to ingest new telemetry:
+    * Select an active incident number.
+    * Enter Source (e.g. CrowdStrike EDR, Palo Alto Firewall).
+    * Enter Source IP and Destination IP (validated using Python's ipaddress library).
+    * Paste arbitrary JSON metadata.
+    * FastAPI checks that the incident exists and is active in PostgreSQL, then writes
+      the document into MongoDB.
+
+4.6. ASSET INVENTORY MANAGEMENT (/assets)
+-----------------------------------------
+- Location: http://localhost:5173/assets
+- What it does:
+  - Manages the organizational asset catalog stored in PostgreSQL table "assets".
+  - Displays Asset Name, Type (Web Server, Database Server, Employee Laptop, Firewall),
+    IP Address, and Responsible Department.
+  - Demonstrates relational 3NF: Updating an asset IP address here updates exactly 1 row
+    in PostgreSQL, and all linked incident views immediately display the updated IP.
+
+4.7. THREAT ACTORS CATALOG (/threat-actors)
+-------------------------------------------
+- Location: http://localhost:5173/threat-actors
+- What it does:
+  - Threat intelligence master catalog tracking threat groups (e.g., Night Sparrow).
+  - Displays Actor Alias and intelligence descriptions.
+  - Demonstrates relational integrity: Deleting or resolving an incident never deletes
+    the underlying threat actor master record (preventing deletion anomalies).
+
+4.8. CRYPTOGRAPHIC AUDIT CHAIN (/audit)
+---------------------------------------
+- Location: http://localhost:5173/audit
+- What it does:
+  - Displays the tamper-evident, SHA-256 cryptographically linked audit ledger stored
+    in the PostgreSQL "audit_logs" table.
+  - Each row displays: Log ID, Incident ID, Performed By, Action Type, Previous Hash,
+    Current SHA-256 Hash, and UTC Timestamp.
+  - The "Verify Hash Chain" Button:
+    * Click "Verify Chain".
+    * The frontend calls GET /api/audit/verify.
+    * FastAPI recalculates every hash in sequential order from genesis:
+      Hash = SHA-256(Prev_Hash + CanonicalJSON(Action_Data + Timestamp))
+    * Displays a green success banner confirming "Integrity Valid: 100% Verified".
+    * If any row in PostgreSQL is tampered with or modified directly in SQL, the
+      verification immediately fails and identifies the exact broken log ID!
+
+4.9. REPORTS & SLA METRICS (/reports)
+-------------------------------------
+- Location: http://localhost:5173/reports
+- What it does:
+  - SOC operational analytics and compliance reporting.
+  - Analyzes Resolution SLA Performance (percentage of cases resolved within SLA).
+  - Displays Analyst Workload Distribution charts showing active case burdens.
+  - Lists historical SLA breach logs for post-incident review.
+
+
+================================================================================
+5. ROLE-BASED PERMISSIONS (ADMIN VS. ANALYST VS. REPORTER)
+================================================================================
+CIMS enforces strict Role-Based Access Control (RBAC) at both the API and UI layers:
+
+Feature / Page              | ADMIN       | ANALYST             | REPORTER
+----------------------------+-------------+---------------------+-----------------
+SOC Dashboard (/dashboard)  | Full Access | Full Access         | Summary Only
+Incident List (/incidents)  | All Cases   | Assigned Cases Only | Self-Reported Only
+Report Incident Modal       | Yes         | Yes                 | Yes
+Assign Analysts             | Yes         | No                  | No
+Add Timeline Actions        | Yes         | Yes (Assigned Case) | No
+Link Assets & Threat Actors | Yes         | Yes (Assigned Case) | No
+Add Security Logs (MongoDB) | Yes         | Yes (Assigned Case) | No
+View Threat Actor Catalog   | Yes         | Yes                 | No
+View Audit Logs (/audit)    | Full Access | Read-Only           | Hidden
+Verify Audit Chain Button   | Yes         | No                  | No
+Reports & Metrics (/reports)| Yes         | Read-Only           | Hidden
+Sensitive Field Redaction   | None        | None                | Actions, analysts,
+                            |             |                     | & assets redacted
+
+Anti-Enumeration Security Feature:
+If an Analyst attempts to navigate directly to an incident ID assigned to another
+analyst (e.g. /incidents/9), the system responds with HTTP 404 Not Found (rather
+than HTTP 403 Forbidden). This prevents attackers from guessing which incident IDs exist.
+
+
+================================================================================
+6. HOW THE SYSTEM WORKS UNDER THE HOOD
+================================================================================
+
+6.1. Polyglot Persistence (PostgreSQL 16 + MongoDB 8.0)
+- PostgreSQL manages authoritative relational workflow states, SLA calculations,
+  user credentials, and the SHA-256 audit ledger.
+- MongoDB manages polymorphic, schemaless security event telemetry where log
+  structures differ between firewalls, EDR agents, and network sensors.
+- Referential integrity between PostgreSQL and MongoDB is enforced at the application
+  layer in FastAPI: Before inserting a document into MongoDB, FastAPI executes a query
+  with a row lock (FOR UPDATE) in PostgreSQL to verify that the incident exists and is active.
+
+6.2. Dual-Layer Validation
+- Layer 1 (API Schema Validation):
+  Pydantic v2 schemas inspect every inbound request before database execution.
+  Validates string length boundaries, positive foreign keys, and RFC IP address syntax.
+- Layer 2 (Database DDL Constraints):
+  PostgreSQL enforces declarative rules directly on disk:
+  * Primary Keys on all 12 tables.
+  * Unique indexes on users.email, assets.ip_address, threat_actors.alias.
+  * Unique junction constraint: uq_incident_assignment_incident_analyst_once.
+  * Check constraints: workload >= 0, response_sla_hours > 0, resolution >= response SLA.
+  * Foreign keys with ON DELETE RESTRICT (preventing orphan records) and ON DELETE CASCADE.
+
+6.3. Incident Lifecycle State Machine
+Incidents follow an ordered, strictly enforced progression:
+   [Open] ---> [Assigned] ---> [Under Investigation] ---> [In Progress] ---> [Resolved] ---> [Closed]
+- The case cannot move to "Assigned" until an analyst has been assigned.
+- Invalid jumps (e.g. Open directly to Resolved) are blocked with HTTP 409 Conflict.
+- Once an incident reaches "Resolved" or "Closed", it enters a terminal state: all
+  further modifications (adding actions, linking assets, adding logs) are permanently locked.
+
+6.4. Machine Learning Severity Advisory
+- Built with Python scikit-learn (TF-IDF vectorizer + Logistic Regression classifier).
+- Model file: backend/app/ml/severity_model.joblib trained on security incident tickets.
+- Operates in advisory mode: Recommends Low, Medium, High, or Critical with confidence
+  scores, but leaves final operational authority with the human analyst.
+
+6.5. Cryptographic SHA-256 Hash Chain
+- In backend/app/services/audit_service.py:
+  Every state modification creates an immutable audit block.
+  Block Hash = SHA-256(Previous_Hash + CanonicalJSON(Incident_ID, Performer, Action_Type, Action_Data, Timestamp))
+- The first record links to GENESIS_HASH (64 zeros).
+- Concurrency race conditions are prevented using PostgreSQL transactional advisory locks:
+  SELECT pg_advisory_xact_lock(0x43494D5341554449);
+- Any unauthorized update to historical rows invalidates the entire mathematical chain.
+
+
+================================================================================
+7. TROUBLESHOOTING & FAQ
+================================================================================
+
+Q1: What should I do if the website displays "API Disconnected"?
+A1: Ensure the FastAPI backend is running on port 8000:
+    In PowerShell:
+    Set-Location "E:\DBMS PROJECT 5th SEM"
+    venv\Scripts\Activate.ps1
+    python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+
+Q2: How do I switch themes if the colors look too dark or too light?
+A2: Click the Sun / Moon toggle icon in the top header (next to the "API Connected" badge)
+    or in the top-right corner of the Login page.
+
+Q3: Why can't I see the "Verify Hash Chain" button or the "Reports" tab?
+A3: You are logged in as an ANALYST or REPORTER. Log out and sign in as ADMIN (admin@cims.edu)
+    to access administrative auditing and report features.
+
+Q4: How do I test the AI Severity suggestion?
+A4: Log in as any user, go to /incidents, click "+ Report Incident", fill in a title and
+    description (e.g. "Ransomware payload detected on finance file share"), and click
+    "Generate suggestion". The AI will recommend a severity level with confidence metrics.
+
+================================================================================
+End of Document - docs/HOW_THE_WEBSITE_WORKS.txt
+================================================================================
